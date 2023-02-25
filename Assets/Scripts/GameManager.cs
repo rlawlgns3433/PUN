@@ -12,6 +12,18 @@ namespace Com.MyCompany.MyGame
     public class GameManager : MonoBehaviourPunCallbacks
     {
 
+
+        #region Public Fields
+
+        public static GameManager Instance;
+
+        #endregion
+
+        void Start()
+        {
+            Instance = this;
+        }
+
         #region Photon Callbacks
 
         /// &lt;summary&gt;
@@ -20,15 +32,6 @@ namespace Com.MyCompany.MyGame
         public override void OnLeftRoom()
         {
             SceneManager.LoadScene(0);
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        public void LeaveRoom()
-        {
-            PhotonNetwork.LeaveRoom();
         }
         public override void OnPlayerEnteredRoom(Player other)
         {
@@ -40,6 +43,8 @@ namespace Com.MyCompany.MyGame
 
                 LoadArena();
             }
+
+
         }
 
         public override void OnPlayerLeftRoom(Player other)
@@ -52,9 +57,21 @@ namespace Com.MyCompany.MyGame
 
                 LoadArena();
             }
+
+
         }
+
+
         #endregion
 
+        #region Public Methods
+
+        public void LeaveRoom()
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+
+        #endregion
 
         #region Private Methods
 
