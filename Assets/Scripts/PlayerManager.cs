@@ -30,13 +30,14 @@ namespace Com.MyCompany.MyGame
         }
 
         #endregion
-        #region Public Fields 
 
+        #region Public Fields 
+        [Tooltip("The local player instance. Use this to know if the local player is represented in the Scene")]
+        public static GameObject LocalPlayerInstance;
         [Tooltip("The current Health of our player")]
         public float Health = 1f;
 
         #endregion
-
 
         #region Private Fields
 
@@ -45,6 +46,14 @@ namespace Com.MyCompany.MyGame
         private GameObject beams;
         //True, when the user is firing
         bool IsFiring;
+
+#if UNITY54ORNEWER
+void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode loadingMode)
+{
+    this.CalledOnLevelWasLoaded(scene.buildIndex);
+}
+#endif
+
         #endregion
 
         #region MonoBehaviour CallBacks
@@ -62,6 +71,16 @@ namespace Com.MyCompany.MyGame
             {
                 beams.SetActive(false);
             }
+
+            // #Important
+            // used in GameManager.cs: we keep track of the localPlayer instance to prevent instantiation when levels are synchronized
+            if (photonView.IsMine)
+            {
+                PlayerManager.LocalPlayerInstance = this.gameObject;
+            }
+            // #Critical
+            // we flag as don't destroy on load so that instance survives level synchronization, thus giving a seamless experience when levels load.
+            DontDestroyOnLoad(this.gameObject);
         }
 
         void Start()
@@ -73,12 +92,18 @@ namespace Com.MyCompany.MyGame
                 if (photonView.IsMine)
                 {
                     ProcessInputs();
+                    _cameraWork.OnStartFollowing();
                 }
             }
             else
             {
                 Debug.LogError("<Color=Red><a>Missing</a></Color> Beams Reference.", this);
             }
+#if UNITY54ORNEWER
+// Unity 5.4 has a new scene management. register a method to call CalledOnLevelWasLoaded.
+UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+#endif
+
         }
 
         /// <summary>
@@ -143,9 +168,37 @@ namespace Com.MyCompany.MyGame
             Health -= 0.1f * Time.deltaTime;
         }
 
-        #endregion
+#if !UNITY_5_4_OR_NEWER
+/// <summary>See CalledOnLevelWasLoaded. Outdated in Unity 5.4.</summary>
+void OnLevelWasLoaded(int level)
+{
+    this.CalledOnLevelWasLoaded(level);
+}
+endif
 
-        #region Custom
+void CalledOnLevelWasLoaded(int level)
+{
+    // check if we are outside the Arena and if it's the case, spawn around the center of the arena in a safe zone
+    if (!Physics.Raycast(transform.position, -Vector3.up, 5f))
+    {
+        transform.position = new Vector3(0f, 5f, 0f);
+    }
+}
+
+#endif
+
+#if UNITY54ORNEWER
+public override void OnDisable()
+{
+    // Always call the base to remove callbacks
+    base.OnDisable ();
+    UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+}
+#endif
+
+#endregion
+
+#region Custom
 
         /// <summary>
         /// Processes the inputs. Maintain a flag representing when the user is pressing Fire.
@@ -168,6 +221,6 @@ namespace Com.MyCompany.MyGame
             }
         }
 
-        #endregion
+#endregion
     }
 }

@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 775223cbf658bed40b70b473eb2d2e48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Health: 1
   beams: {fileID: 0}
 --- !u!1 &1784597412
 GameObject:
@@ -1688,6 +1689,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 775223cbf658bed40b70b473eb2d2e48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Health: 1
   beams: {fileID: 213920903}
 --- !u!1 &2968530395476847593
 GameObject:
